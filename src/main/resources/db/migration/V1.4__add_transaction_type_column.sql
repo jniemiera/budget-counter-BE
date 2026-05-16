@@ -1,0 +1,1 @@
+ALTER TABLE bucket_transactions ADD type varchar(255) NOT NULL CHECK ( type IN ('ADDFUNDS', 'REMOVEFUNDS') ) default 'REMOVEFUNDS';

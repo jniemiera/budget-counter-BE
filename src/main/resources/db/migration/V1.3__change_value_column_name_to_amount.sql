@@ -1,0 +1,1 @@
+ALTER TABLE bucket_transactions RENAME COLUMN value to amount;

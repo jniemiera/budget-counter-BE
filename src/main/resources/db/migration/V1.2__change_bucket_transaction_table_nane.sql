@@ -1,0 +1,1 @@
+ALTER TABLE BucketTransactions RENAME to bucket_transactions;

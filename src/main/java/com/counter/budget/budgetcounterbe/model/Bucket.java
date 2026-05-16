@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,6 +17,7 @@ import java.util.UUID;
 public class Bucket {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "bucket_id")
     private UUID id;
 
     @Column(nullable = false)
@@ -25,8 +27,24 @@ public class Bucket {
     private int percentage;
 
     @Column(nullable = false)
-    private float value;
+    private float amount;
 
-    @OneToMany(mappedBy = "bucket", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<BucketTransaction> bucketTransactions;
+    @Column
+    private String description;
+
+    @OneToMany(mappedBy = "bucket")
+    private List<BucketTransaction> bucketTransactions = new ArrayList<>();
+
+    public Bucket(String name, int percentage, String description){
+        this.name = name;
+        this.percentage = percentage;
+        this.description = description;
+        this.amount = 0;
+    }
+
+    public BucketTransaction addBucketTransaction(Transaction transaction, float amount, TransactionType type){
+        BucketTransaction bt = new BucketTransaction(this, transaction, amount, type);
+        this.bucketTransactions.add(bt);
+        return bt;
+    }
 }

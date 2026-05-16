@@ -1,16 +1,22 @@
 package com.counter.budget.budgetcounterbe.model;
 
+import com.counter.budget.budgetcounterbe.service.BucketTransactionService;
 import jakarta.persistence.*;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.UUID;
 
 @Entity
 @Table(name="BucketTransactions")
 @NoArgsConstructor
+@Getter
+@Setter
 public class BucketTransaction {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "bucket_transaction_id")
     private UUID id;
 
     @ManyToOne
@@ -22,5 +28,16 @@ public class BucketTransaction {
     private Bucket bucket;
 
     @Column(nullable = false)
-    private float value;
+    private float amount;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TransactionType type;
+
+    public BucketTransaction(Bucket bucket, Transaction transaction, float amount, TransactionType type) {
+        this.bucket = bucket;
+        this.transaction = transaction;
+        this.amount = amount;
+        this.type = type;
+    }
 }
