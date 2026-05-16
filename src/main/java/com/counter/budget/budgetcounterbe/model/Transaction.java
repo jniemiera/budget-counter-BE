@@ -33,4 +33,8 @@ public class Transaction {
     public void addBucketTransaction(BucketTransaction bt) {
         bucketTransactions.add(bt);
     }
+
+    public void patchBucketTransaction(BucketTransaction bt) {
+        bucketTransactions.set(0, bt);
+    }
 }

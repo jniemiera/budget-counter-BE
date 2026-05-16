@@ -49,7 +49,27 @@ public class TransactionService {
                 bucketService.processTransaction(bt);
             }
             case ADDFUNDS -> {
+                List<Bucket> buckets = bucketService.getBuckets();
+                float splitAmountSum = 0;
+                for(Bucket bucket: buckets) {
+                    float amountForBucket = request.amount()*bucket.getPercentage()/100;
+                    splitAmountSum += amountForBucket;
+                    BucketTransaction bt = bucket.addBucketTransaction(transaction, amountForBucket, request.type());
+                    transaction.addBucketTransaction(bt);
+                }
 
+                //Check if money was split between buckets correctly (protection from division errors) and fix difference if it exists
+                // amountDifference will be positive, if there was not enough money put into buckets. Negative, if we put too much into buckets
+                float amountDifference = request.amount() - splitAmountSum;
+                if (amountDifference != 0) {
+                    BucketTransaction btToEdit = transaction.getBucketTransactions().getFirst();
+                    btToEdit.setAmount(btToEdit.getAmount() + amountDifference);
+                    transaction.patchBucketTransaction(btToEdit);
+                }
+
+                for(BucketTransaction bt: transaction.getBucketTransactions()) {
+                    bucketService.processTransaction(bt);
+                }
             }
         }
         transactionRepository.save(transaction);

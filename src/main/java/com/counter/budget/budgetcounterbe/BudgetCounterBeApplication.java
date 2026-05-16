@@ -23,6 +23,7 @@ public class BudgetCounterBeApplication {
 //        bucketService.createBucket(new SaveBucketRequest("For fun", 20, "For personal pleasure and things that aren't absolutely necessary"));
 //        TransactionService transactionService = context.getBean(TransactionService.class);
 //        transactionService.createTransaction(new CreateTransactionRequest(13.0F, TransactionType.REMOVEFUNDS, Optional.of(UUID.fromString("4db86085-703d-420b-8a89-7cae76813e9d"))));
+//        transactionService.createTransaction(new CreateTransactionRequest(1000, TransactionType.ADDFUNDS, Optional.empty()));
     }
 
 }
