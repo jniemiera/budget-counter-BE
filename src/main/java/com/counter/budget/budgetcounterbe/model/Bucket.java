@@ -35,6 +35,9 @@ public class Bucket {
     @OneToMany(mappedBy = "bucket")
     private List<BucketTransaction> bucketTransactions = new ArrayList<>();
 
+    @Column(nullable = false)
+    private boolean deleted;
+
     public Bucket(String name, int percentage, String description){
         this.name = name;
         this.percentage = percentage;

@@ -33,6 +33,9 @@ public class BucketTransaction {
     @Column(nullable = false)
     private TransactionType type;
 
+    @Column(nullable = false)
+    private boolean deleted;
+
     public BucketTransaction(Bucket bucket, Transaction transaction, float amount, TransactionType type) {
         this.bucket = bucket;
         this.transaction = transaction;
