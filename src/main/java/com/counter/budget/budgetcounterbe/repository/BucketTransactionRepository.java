@@ -10,4 +10,6 @@ import java.util.UUID;
 @Repository
 public interface BucketTransactionRepository extends JpaRepository<BucketTransaction, UUID> {
     List<BucketTransaction> findAllByBucketId(UUID bucketId);
+
+    List<BucketTransaction> findAllByTransactionId(UUID transactionId);
 }
