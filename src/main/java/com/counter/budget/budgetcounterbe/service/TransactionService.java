@@ -1,20 +1,19 @@
 package com.counter.budget.budgetcounterbe.service;
 
 import com.counter.budget.budgetcounterbe.dto.CreateTransactionRequest;
+import com.counter.budget.budgetcounterbe.dto.TransactionResponse;
+import com.counter.budget.budgetcounterbe.dto.TransactionResponseMapper;
 import com.counter.budget.budgetcounterbe.exception.transaction.TransactionBucketNotSpecifiedException;
-import com.counter.budget.budgetcounterbe.exception.transaction.TransactionFailedException;
 import com.counter.budget.budgetcounterbe.exception.transaction.TransactionNotFoundException;
 import com.counter.budget.budgetcounterbe.model.Bucket;
 import com.counter.budget.budgetcounterbe.model.BucketTransaction;
 import com.counter.budget.budgetcounterbe.model.Transaction;
-import com.counter.budget.budgetcounterbe.model.TransactionType;
 import com.counter.budget.budgetcounterbe.repository.TransactionRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -23,18 +22,25 @@ public class TransactionService {
 
     private final BucketService bucketService;
 
+    private final TransactionResponseMapper transactionResponseMapper;
+
     @Autowired
-    public TransactionService(TransactionRepository transactionRepository, BucketService bucketService) {
+    public TransactionService(TransactionRepository transactionRepository,
+                              BucketService bucketService,
+                              TransactionResponseMapper transactionResponseMapper) {
         this.transactionRepository = transactionRepository;
         this.bucketService = bucketService;
+        this.transactionResponseMapper = transactionResponseMapper;
     }
 
-    public Transaction getTransactionById(UUID id) {
-        return this.transactionRepository.findById(id).orElseThrow(() -> new TransactionNotFoundException(id));
+    public TransactionResponse getTransactionById(UUID id) {
+        Transaction transaction = transactionRepository.findByIdWithBucketTransactions(id).orElseThrow(() -> new TransactionNotFoundException(id));
+        return transactionResponseMapper.toResponse(transaction);
     }
 
-    public List<Transaction> getTransactions() {
-        return this.transactionRepository.findAll();
+    public List<TransactionResponse> getTransactions() {
+        List<Transaction> transactions =  transactionRepository.findAllWithBucketTransactions();
+        return transactions.stream().map((transactionResponseMapper::toResponse)).toList();
     }
 
     @Transactional
@@ -58,8 +64,8 @@ public class TransactionService {
                     transaction.addBucketTransaction(bt);
                 }
 
-                //Check if money was split between buckets correctly (protection from division errors) and fix difference if it exists
-                // amountDifference will be positive, if there was not enough money put into buckets. Negative, if we put too much into buckets
+                //Check if money was split between buckets correctly (protection from division errors) and fix the difference if there is any
+                //amountDifference will be positive if there was not enough money put into buckets. Negative, if we put too much into buckets
                 float amountDifference = request.amount() - splitAmountSum;
                 if (amountDifference != 0) {
                     BucketTransaction btToEdit = transaction.getBucketTransactions().getFirst();

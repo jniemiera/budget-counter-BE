@@ -1,5 +1,7 @@
 package com.counter.budget.budgetcounterbe.service;
 
+import com.counter.budget.budgetcounterbe.dto.BucketResponse;
+import com.counter.budget.budgetcounterbe.dto.BucketResponseMapper;
 import com.counter.budget.budgetcounterbe.dto.SaveBucketRequest;
 import com.counter.budget.budgetcounterbe.exception.bucket.BucketNotFoundException;
 import com.counter.budget.budgetcounterbe.exception.bucket.NotEnoughFundsException;
@@ -18,21 +20,34 @@ import java.util.UUID;
 public class BucketService {
     private final BucketRepository bucketRepository;
 
+    private final BucketResponseMapper bucketResponseMapper;
+
     @Autowired
-    public BucketService(BucketRepository bucketRepository) {
+    public BucketService(
+            BucketRepository bucketRepository,
+            BucketResponseMapper bucketResponseMapper) {
         this.bucketRepository = bucketRepository;
+        this.bucketResponseMapper = bucketResponseMapper;
     }
 
     public Bucket getBucketById(UUID id) {
-        return this.bucketRepository.findById(id).orElseThrow(() -> new BucketNotFoundException(id));
+        return bucketRepository.findById(id).orElseThrow(() -> new BucketNotFoundException(id));
+    }
+
+    public BucketResponse getBucketResponseById(UUID id) {
+        return bucketResponseMapper.toResponse(getBucketById(id));
     }
 
     public List<Bucket> getBuckets() {
-        return this.bucketRepository.findAll();
+        return bucketRepository.findAll();
+    }
+
+    public List<BucketResponse> getBucketsResponse() {
+        return getBuckets().stream().map(bucketResponseMapper::toResponse).toList();
     }
 
     public void createBucket(@NonNull SaveBucketRequest request) {
-        this.bucketRepository.save(new Bucket(request.name(), request.percentage(), request.description()));
+        bucketRepository.save(new Bucket(request.name(), request.percentage(), request.description()));
     }
 
     @Transactional
@@ -41,33 +56,33 @@ public class BucketService {
         bucket.setName(request.name());
         bucket.setPercentage(request.percentage());
         bucket.setDescription(request.description());
-        this.bucketRepository.save(bucket);
+        bucketRepository.save(bucket);
     }
 
     public void deleteBucket(UUID id) {
-        this.bucketRepository.deleteById(id);
+        bucketRepository.deleteById(id);
     }
 
 
-    public void processTransaction(BucketTransaction bt) {
+    public void processTransaction(@NonNull BucketTransaction bt) {
         switch (bt.getType()) {
             case ADDFUNDS -> addFunds(bt.getAmount(), bt.getBucket());
             case REMOVEFUNDS -> removeFunds(bt.getAmount(), bt.getBucket());
         }
     }
 
-    private void addFunds(float amountToAdd, Bucket bucket) {
+    private void addFunds(float amountToAdd, @NonNull Bucket bucket) {
         float currentAmount = bucket.getAmount();
         bucket.setAmount(currentAmount + amountToAdd);
-        this.bucketRepository.save(bucket);
+        bucketRepository.save(bucket);
     }
 
-    private void removeFunds(float amountToSubtract, Bucket bucket){
+    private void removeFunds(float amountToSubtract, @NonNull Bucket bucket){
         float currentAmount = bucket.getAmount();
 
         if(amountToSubtract>currentAmount) throw new NotEnoughFundsException(bucket.getId(), amountToSubtract, currentAmount);
 
         bucket.setAmount(currentAmount - amountToSubtract);
-        this.bucketRepository.save(bucket);
+        bucketRepository.save(bucket);
     }
 }

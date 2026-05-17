@@ -1,6 +1,5 @@
 package com.counter.budget.budgetcounterbe.model;
 
-import com.counter.budget.budgetcounterbe.service.BucketTransactionService;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
