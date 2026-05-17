@@ -80,8 +80,4 @@ public class TransactionService {
         }
         transactionRepository.save(transaction);
     }
-
-    public void deleteTransaction(UUID id) {
-        transactionRepository.deleteById(id);
-    }
 }
