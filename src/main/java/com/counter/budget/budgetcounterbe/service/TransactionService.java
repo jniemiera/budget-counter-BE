@@ -9,6 +9,7 @@ import com.counter.budget.budgetcounterbe.exception.transaction.TransactionNotFo
 import com.counter.budget.budgetcounterbe.model.Bucket;
 import com.counter.budget.budgetcounterbe.model.BucketTransaction;
 import com.counter.budget.budgetcounterbe.model.Transaction;
+import com.counter.budget.budgetcounterbe.model.TransactionType;
 import com.counter.budget.budgetcounterbe.repository.TransactionRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,8 +35,12 @@ public class TransactionService {
         this.transactionResponseMapper = transactionResponseMapper;
     }
 
+    public Transaction getTransaction(UUID id) {
+        return transactionRepository.findByIdWithBucketTransactions(id).orElseThrow(() -> new TransactionNotFoundException(id));
+    }
+
     public TransactionResponse getTransactionById(UUID id) {
-        Transaction transaction = transactionRepository.findByIdWithBucketTransactions(id).orElseThrow(() -> new TransactionNotFoundException(id));
+        Transaction transaction = getTransaction(id);
         return transactionResponseMapper.toResponse(transaction);
     }
 
@@ -50,14 +55,15 @@ public class TransactionService {
 
         Transaction transaction = transactionRepository.save(new Transaction());
         switch (request.type()){
-            case REMOVEFUNDS -> {
-                UUID bucketId = request.bucketId().orElseThrow(TransactionBucketNotSpecifiedException::new);
+            case REMOVEFUNDS, UNDO_REMOVEFUNDS -> {
+                if (request.bucketId() == null) throw new TransactionBucketNotSpecifiedException();
+                UUID bucketId = request.bucketId();
                 Bucket bucket = bucketService.getBucketById(bucketId);
                 BucketTransaction bt = bucket.addBucketTransaction(transaction, request.amount(), request.type());
                 transaction.addBucketTransaction(bt);
                 bucketService.processTransaction(bt);
             }
-            case ADDFUNDS -> {
+            case ADDFUNDS, UNDO_ADDFUNDS -> {
                 List<Bucket> buckets = bucketService.getBuckets();
                 float splitAmountSum = 0;
                 for(Bucket bucket: buckets) {
@@ -84,6 +90,25 @@ public class TransactionService {
         transactionRepository.save(transaction);
     }
 
+    @Transactional
+    public void deleteTransaction(UUID id) {
+        Transaction transaction = getTransaction(id);
+        TransactionType transactionType = transaction.getBucketTransactions().getFirst().getType();
+        TransactionType undoType = TransactionType.UNDO_REMOVEFUNDS;
+        UUID bucketId = null;
+        if (transactionType.equals(TransactionType.ADDFUNDS)) {
+            undoType = TransactionType.UNDO_ADDFUNDS;
+        }
+        if (transactionType.equals(TransactionType.REMOVEFUNDS)) {
+            bucketId = transaction.getBucketTransactions().getFirst().getBucket().getId();
+        }
+
+        createTransaction(new CreateTransactionRequest(
+                transaction.getBucketTransactions().stream().map(BucketTransaction::getAmount).reduce(0F, Float::sum),
+                undoType,
+                bucketId
+        ));
+      
     private void validateBucketPercentages() {
         int bucketPercentages = bucketService.sumBucketPercentages(bucketService.getBuckets());
         if (bucketPercentages != 100) {

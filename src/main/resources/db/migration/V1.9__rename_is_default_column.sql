@@ -1,0 +1,1 @@
+ALTER TABLE Buckets RENAME COLUMN isDefault to is_default;

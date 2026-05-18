@@ -1,0 +1,1 @@
+ALTER TABLE Buckets ADD isDefault BOOLEAN NOT NULL default false;
