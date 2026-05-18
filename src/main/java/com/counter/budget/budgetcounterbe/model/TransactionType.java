@@ -1,5 +1,5 @@
 package com.counter.budget.budgetcounterbe.model;
 
 public enum TransactionType {
-    ADDFUNDS, REMOVEFUNDS
+    ADDFUNDS, REMOVEFUNDS, UNDO_ADDFUNDS, UNDO_REMOVEFUNDS
 }

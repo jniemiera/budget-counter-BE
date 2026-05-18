@@ -4,6 +4,7 @@ import com.counter.budget.budgetcounterbe.dto.BucketResponse;
 import com.counter.budget.budgetcounterbe.dto.BucketResponseMapper;
 import com.counter.budget.budgetcounterbe.dto.SaveBucketRequest;
 import com.counter.budget.budgetcounterbe.exception.bucket.BucketNotFoundException;
+import com.counter.budget.budgetcounterbe.exception.bucket.DefaultBucketNotFound;
 import com.counter.budget.budgetcounterbe.exception.bucket.NotEnoughFundsException;
 import com.counter.budget.budgetcounterbe.model.Bucket;
 import com.counter.budget.budgetcounterbe.model.BucketTransaction;
@@ -31,7 +32,7 @@ public class BucketService {
     }
 
     public Bucket getBucketById(UUID id) {
-        return bucketRepository.findById(id).orElseThrow(() -> new BucketNotFoundException(id));
+        return bucketRepository.findByIdAndDeletedFalse(id).orElseThrow(() -> new BucketNotFoundException(id));
     }
 
     public BucketResponse getBucketResponseById(UUID id) {
@@ -39,11 +40,15 @@ public class BucketService {
     }
 
     public List<Bucket> getBuckets() {
-        return bucketRepository.findAll();
+        return bucketRepository.findAllByDeletedFalse();
     }
 
     public List<BucketResponse> getBucketsResponse() {
         return getBuckets().stream().map(bucketResponseMapper::toResponse).toList();
+    }
+
+    public Bucket getDefaultBucket() {
+        return bucketRepository.findByIsDefaultTrue().orElseThrow(DefaultBucketNotFound::new);
     }
 
     public void createBucket(@NonNull SaveBucketRequest request) {
@@ -59,15 +64,12 @@ public class BucketService {
         bucketRepository.save(bucket);
     }
 
-    public void deleteBucket(UUID id) {
-        bucketRepository.deleteById(id);
-    }
-
-
     public void processTransaction(@NonNull BucketTransaction bt) {
         switch (bt.getType()) {
             case ADDFUNDS -> addFunds(bt.getAmount(), bt.getBucket());
             case REMOVEFUNDS -> removeFunds(bt.getAmount(), bt.getBucket());
+            case UNDO_ADDFUNDS -> addFunds(bt.getAmount() * -1, bt.getBucket());
+            case UNDO_REMOVEFUNDS -> removeFunds(bt.getAmount() * -1, bt.getBucket());
         }
     }
 

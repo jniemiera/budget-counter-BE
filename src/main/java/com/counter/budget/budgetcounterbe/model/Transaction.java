@@ -29,9 +29,6 @@ public class Transaction {
     @OneToMany(mappedBy = "transaction", cascade = CascadeType.ALL, orphanRemoval = true)
     List<BucketTransaction> bucketTransactions = new ArrayList<>();
 
-    @Column(nullable = false)
-    private boolean deleted;
-
     public void addBucketTransaction(BucketTransaction bt) {
         bucketTransactions.add(bt);
     }

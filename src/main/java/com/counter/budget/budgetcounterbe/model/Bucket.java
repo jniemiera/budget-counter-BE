@@ -38,6 +38,9 @@ public class Bucket {
     @Column(nullable = false)
     private boolean deleted;
 
+    @Column(nullable = false, updatable = false)
+    private boolean isDefault;
+
     public Bucket(String name, int percentage, String description){
         this.name = name;
         this.percentage = percentage;

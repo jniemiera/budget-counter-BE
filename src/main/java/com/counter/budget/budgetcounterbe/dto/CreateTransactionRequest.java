@@ -8,6 +8,6 @@ import java.util.UUID;
 
 public record CreateTransactionRequest(
         @NotNull float amount,
-        TransactionType type,
-        Optional<UUID> bucketId
+        @NotNull TransactionType type,
+        UUID bucketId
 ) {}
