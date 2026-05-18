@@ -87,4 +87,8 @@ public class BucketService {
         bucket.setAmount(currentAmount - amountToSubtract);
         bucketRepository.save(bucket);
     }
+
+    public int sumBucketPercentages(List<Bucket> buckets) {
+        return buckets.stream().map(Bucket::getPercentage).reduce(0, Integer::sum);
+    }
 }

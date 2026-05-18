@@ -3,6 +3,7 @@ package com.counter.budget.budgetcounterbe.service;
 import com.counter.budget.budgetcounterbe.dto.CreateTransactionRequest;
 import com.counter.budget.budgetcounterbe.dto.TransactionResponse;
 import com.counter.budget.budgetcounterbe.dto.TransactionResponseMapper;
+import com.counter.budget.budgetcounterbe.exception.bucket.BucketPercentagesIncorrectException;
 import com.counter.budget.budgetcounterbe.exception.transaction.TransactionBucketNotSpecifiedException;
 import com.counter.budget.budgetcounterbe.exception.transaction.TransactionNotFoundException;
 import com.counter.budget.budgetcounterbe.model.Bucket;
@@ -50,6 +51,8 @@ public class TransactionService {
 
     @Transactional
     public void createTransaction(CreateTransactionRequest request) {
+        validateBucketPercentages();
+
         Transaction transaction = transactionRepository.save(new Transaction());
         switch (request.type()){
             case REMOVEFUNDS, UNDO_REMOVEFUNDS -> {
@@ -105,5 +108,11 @@ public class TransactionService {
                 undoType,
                 bucketId
         ));
+      
+    private void validateBucketPercentages() {
+        int bucketPercentages = bucketService.sumBucketPercentages(bucketService.getBuckets());
+        if (bucketPercentages != 100) {
+            throw new BucketPercentagesIncorrectException(bucketPercentages);
+        }
     }
 }
