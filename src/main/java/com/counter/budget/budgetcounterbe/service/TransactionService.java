@@ -45,7 +45,7 @@ public class TransactionService {
     }
 
     public List<TransactionResponse> getTransactions() {
-        List<Transaction> transactions =  transactionRepository.findAllWithBucketTransactions();
+        List<Transaction> transactions = transactionRepository.findAllWithBucketTransactions();
         return transactions.stream().map((transactionResponseMapper::toResponse)).toList();
     }
 
@@ -54,7 +54,7 @@ public class TransactionService {
         validateBucketPercentages();
 
         Transaction transaction = transactionRepository.save(new Transaction());
-        switch (request.type()){
+        switch (request.type()) {
             case REMOVEFUNDS, UNDO_REMOVEFUNDS -> {
                 if (request.bucketId() == null) throw new TransactionBucketNotSpecifiedException();
                 UUID bucketId = request.bucketId();
@@ -66,8 +66,8 @@ public class TransactionService {
             case ADDFUNDS, UNDO_ADDFUNDS -> {
                 List<Bucket> buckets = bucketService.getBuckets();
                 float splitAmountSum = 0;
-                for(Bucket bucket: buckets) {
-                    float amountForBucket = request.amount()*bucket.getPercentage()/100;
+                for (Bucket bucket : buckets) {
+                    float amountForBucket = request.amount() * bucket.getPercentage() / 100;
                     splitAmountSum += amountForBucket;
                     BucketTransaction bt = bucket.addBucketTransaction(transaction, amountForBucket, request.type());
                     transaction.addBucketTransaction(bt);
@@ -82,7 +82,7 @@ public class TransactionService {
                     transaction.patchBucketTransaction(btToEdit);
                 }
 
-                for(BucketTransaction bt: transaction.getBucketTransactions()) {
+                for (BucketTransaction bt : transaction.getBucketTransactions()) {
                     bucketService.processTransaction(bt);
                 }
             }
@@ -108,8 +108,9 @@ public class TransactionService {
                 undoType,
                 bucketId
         ));
-      
-    private void validateBucketPercentages() {
+    }
+
+    private void validateBucketPercentages () {
         int bucketPercentages = bucketService.sumBucketPercentages(bucketService.getBuckets());
         if (bucketPercentages != 100) {
             throw new BucketPercentagesIncorrectException(bucketPercentages);
