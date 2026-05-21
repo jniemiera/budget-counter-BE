@@ -14,6 +14,7 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -68,23 +69,23 @@ public class BucketService {
         switch (bt.getType()) {
             case ADDFUNDS -> addFunds(bt.getAmount(), bt.getBucket());
             case REMOVEFUNDS -> removeFunds(bt.getAmount(), bt.getBucket());
-            case UNDO_ADDFUNDS -> addFunds(bt.getAmount() * -1, bt.getBucket());
-            case UNDO_REMOVEFUNDS -> removeFunds(bt.getAmount() * -1, bt.getBucket());
+            case UNDO_ADDFUNDS -> addFunds(bt.getAmount().negate(), bt.getBucket());
+            case UNDO_REMOVEFUNDS -> removeFunds(bt.getAmount().negate(), bt.getBucket());
         }
     }
 
-    private void addFunds(float amountToAdd, @NonNull Bucket bucket) {
-        float currentAmount = bucket.getAmount();
-        bucket.setAmount(currentAmount + amountToAdd);
+    private void addFunds(BigDecimal amountToAdd, @NonNull Bucket bucket) {
+        BigDecimal currentAmount = bucket.getAmount();
+        bucket.setAmount(currentAmount.add(amountToAdd));
         bucketRepository.save(bucket);
     }
 
-    private void removeFunds(float amountToSubtract, @NonNull Bucket bucket){
-        float currentAmount = bucket.getAmount();
+    private void removeFunds(BigDecimal amountToSubtract, @NonNull Bucket bucket){
+        BigDecimal currentAmount = bucket.getAmount();
 
-        if(amountToSubtract>currentAmount) throw new NotEnoughFundsException(bucket.getId(), amountToSubtract, currentAmount);
+        if(amountToSubtract.compareTo(currentAmount)>0) throw new NotEnoughFundsException(bucket.getId(), amountToSubtract, currentAmount);
 
-        bucket.setAmount(currentAmount - amountToSubtract);
+        bucket.setAmount(currentAmount.subtract(amountToSubtract));
         bucketRepository.save(bucket);
     }
 

@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -27,7 +28,7 @@ public class Bucket {
     private int percentage;
 
     @Column(nullable = false)
-    private float amount;
+    private BigDecimal amount;
 
     @Column
     private String description;
@@ -45,10 +46,10 @@ public class Bucket {
         this.name = name;
         this.percentage = percentage;
         this.description = description;
-        this.amount = 0;
+        this.amount = BigDecimal.ZERO;
     }
 
-    public BucketTransaction addBucketTransaction(Transaction transaction, float amount, TransactionType type){
+    public BucketTransaction addBucketTransaction(Transaction transaction, BigDecimal amount, TransactionType type){
         BucketTransaction bt = new BucketTransaction(this, transaction, amount, type);
         this.bucketTransactions.add(bt);
         return bt;

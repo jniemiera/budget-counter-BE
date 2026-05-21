@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Entity
@@ -27,13 +28,13 @@ public class BucketTransaction {
     private Bucket bucket;
 
     @Column(nullable = false)
-    private float amount;
+    private BigDecimal amount;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TransactionType type;
 
-    public BucketTransaction(Bucket bucket, Transaction transaction, float amount, TransactionType type) {
+    public BucketTransaction(Bucket bucket, Transaction transaction, BigDecimal amount, TransactionType type) {
         this.bucket = bucket;
         this.transaction = transaction;
         this.amount = amount;

@@ -1,5 +1,6 @@
 package com.counter.budget.budgetcounterbe.dto;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 public record BucketResponse(
@@ -7,5 +8,5 @@ public record BucketResponse(
         String name,
         String description,
         int percentage,
-        float amount
+        BigDecimal amount
 ) {}
