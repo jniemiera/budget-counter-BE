@@ -1,0 +1,3 @@
+ALTER TABLE Buckets ALTER COLUMN amount TYPE NUMERIC(18,2);
+
+ALTER TABLE bucket_transactions ALTER COLUMN amount TYPE NUMERIC(18,2);

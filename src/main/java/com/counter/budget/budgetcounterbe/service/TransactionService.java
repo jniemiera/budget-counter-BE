@@ -15,6 +15,8 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.UUID;
 
@@ -65,20 +67,23 @@ public class TransactionService {
             }
             case ADDFUNDS, UNDO_ADDFUNDS -> {
                 List<Bucket> buckets = bucketService.getBuckets();
-                float splitAmountSum = 0;
+                BigDecimal splitAmountSum = BigDecimal.ZERO;
+
                 for (Bucket bucket : buckets) {
-                    float amountForBucket = request.amount() * bucket.getPercentage() / 100;
-                    splitAmountSum += amountForBucket;
+                    BigDecimal amountForBucket = request.amount()
+                            .multiply(BigDecimal.valueOf(bucket.getPercentage()))
+                            .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_DOWN);
+                    splitAmountSum = splitAmountSum.add(amountForBucket);
                     BucketTransaction bt = bucket.addBucketTransaction(transaction, amountForBucket, request.type());
                     transaction.addBucketTransaction(bt);
                 }
 
                 //Check if money was split between buckets correctly (protection from division errors) and fix the difference if there is any
                 //amountDifference will be positive if there was not enough money put into buckets. Negative, if we put too much into buckets
-                float amountDifference = request.amount() - splitAmountSum;
-                if (amountDifference != 0) {
+                BigDecimal amountDifference = request.amount().subtract(splitAmountSum);
+                if (amountDifference.compareTo(BigDecimal.ZERO) != 0) {
                     BucketTransaction btToEdit = transaction.getBucketTransactions().getFirst();
-                    btToEdit.setAmount(btToEdit.getAmount() + amountDifference);
+                    btToEdit.setAmount(btToEdit.getAmount().add(amountDifference));
                     transaction.patchBucketTransaction(btToEdit);
                 }
 
@@ -104,7 +109,7 @@ public class TransactionService {
         }
 
         createTransaction(new CreateTransactionRequest(
-                transaction.getBucketTransactions().stream().map(BucketTransaction::getAmount).reduce(0F, Float::sum),
+                transaction.getBucketTransactions().stream().map(BucketTransaction::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add),
                 undoType,
                 bucketId
         ));

@@ -11,6 +11,8 @@ import java.util.UUID;
 @Repository
 public interface BucketRepository extends JpaRepository<Bucket, UUID> {
     Optional<Bucket> findByIdAndDeletedFalse(UUID id);
+
     List<Bucket> findAllByDeletedFalse();
+
     Optional<Bucket> findByIsDefaultTrue();
 }
