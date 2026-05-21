@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -82,7 +83,9 @@ public class TransactionService {
                 //amountDifference will be positive if there was not enough money put into buckets. Negative, if we put too much into buckets
                 BigDecimal amountDifference = request.amount().subtract(splitAmountSum);
                 if (amountDifference.compareTo(BigDecimal.ZERO) != 0) {
-                    BucketTransaction btToEdit = transaction.getBucketTransactions().getFirst();
+                    BucketTransaction btToEdit = transaction.getBucketTransactions().stream()
+                            .sorted(Comparator.comparingInt(bt -> bt.getBucket().getPercentage()))
+                            .toList().getLast();
                     btToEdit.setAmount(btToEdit.getAmount().add(amountDifference));
                     transaction.patchBucketTransaction(btToEdit);
                 }
