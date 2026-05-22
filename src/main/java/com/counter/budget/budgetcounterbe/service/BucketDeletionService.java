@@ -36,12 +36,12 @@ public class BucketDeletionService {
 
         transactionService.createTransaction(new CreateTransactionRequest(
                 bucket.getAmount(),
-                TransactionType.UNDO_REMOVEFUNDS,
+                TransactionType.TRANSFER_ADDFUNDS,
                 defaultBucket.getId()
         ));
         transactionService.createTransaction(new CreateTransactionRequest(
                 bucket.getAmount(),
-                TransactionType.REMOVEFUNDS,
+                TransactionType.TRANSFER_REMOVEFUNDS,
                 bucket.getId()
         ));
 

@@ -54,11 +54,11 @@ public class TransactionService {
 
     @Transactional
     public void createTransaction(CreateTransactionRequest request) {
-        validateBucketPercentages();
+        if(request.type() != TransactionType.TRANSFER_ADDFUNDS && request.type() != TransactionType.TRANSFER_REMOVEFUNDS) validateBucketPercentages();
 
         Transaction transaction = transactionRepository.save(new Transaction());
         switch (request.type()) {
-            case REMOVEFUNDS, UNDO_REMOVEFUNDS -> {
+            case REMOVEFUNDS, UNDO_REMOVEFUNDS, TRANSFER_REMOVEFUNDS, TRANSFER_ADDFUNDS -> {
                 if (request.bucketId() == null) throw new TransactionBucketNotSpecifiedException();
                 UUID bucketId = request.bucketId();
                 Bucket bucket = bucketService.getBucketById(bucketId);
