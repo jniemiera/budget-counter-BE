@@ -5,6 +5,7 @@ public enum TransactionType {
     REMOVEFUNDS,
     UNDO_ADDFUNDS,
     UNDO_REMOVEFUNDS,
+    TRANSFER,
     TRANSFER_ADDFUNDS,
     TRANSFER_REMOVEFUNDS
 }

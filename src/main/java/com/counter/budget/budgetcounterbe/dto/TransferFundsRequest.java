@@ -1,13 +1,15 @@
 package com.counter.budget.budgetcounterbe.dto;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
-public record TransferMoneyRequest(
+@JsonTypeName("transfer")
+public record TransferFundsRequest(
         @NotNull UUID sourceBucketId,
         @NotNull UUID targetBucketId,
         @NotNull BigDecimal amount
 
-) {}
+) implements CreateTransaction {}
