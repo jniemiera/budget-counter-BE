@@ -1,8 +1,6 @@
 package com.counter.budget.budgetcounterbe.service;
 
-import com.counter.budget.budgetcounterbe.dto.BucketResponse;
-import com.counter.budget.budgetcounterbe.dto.BucketResponseMapper;
-import com.counter.budget.budgetcounterbe.dto.SaveBucketRequest;
+import com.counter.budget.budgetcounterbe.dto.*;
 import com.counter.budget.budgetcounterbe.exception.bucket.BucketNotFoundException;
 import com.counter.budget.budgetcounterbe.exception.bucket.DefaultBucketNotFound;
 import com.counter.budget.budgetcounterbe.exception.bucket.NotEnoughFundsException;
@@ -52,23 +50,25 @@ public class BucketService {
         return bucketRepository.findByIsDefaultTrue().orElseThrow(DefaultBucketNotFound::new);
     }
 
-    public void createBucket(@NonNull SaveBucketRequest request) {
-        bucketRepository.save(new Bucket(request.name(), request.percentage(), request.description()));
+    public BucketResponse createBucket(@NonNull SaveBucketRequest request) {
+        Bucket bucket = bucketRepository.save(new Bucket(request));
+        return bucketResponseMapper.toResponse(bucket);
     }
 
     @Transactional
-    public void updateBucket(@NonNull SaveBucketRequest request, UUID id) {
+    public BucketResponse patchBucket(@NonNull PatchBucketRequest request, UUID id) {
         Bucket bucket = getBucketById(id);
-        bucket.setName(request.name());
-        bucket.setPercentage(request.percentage());
-        bucket.setDescription(request.description());
+        if(request.name() != null) bucket.setName(request.name());
+        if(request.percentage() != null) bucket.setPercentage(request.percentage());
+        if(request.description() != null) bucket.setDescription(request.description());
         bucketRepository.save(bucket);
+        return bucketResponseMapper.toResponse(bucket);
     }
 
     public void processTransaction(@NonNull BucketTransaction bt) {
         switch (bt.getType()) {
-            case ADDFUNDS -> addFunds(bt.getAmount(), bt.getBucket());
-            case REMOVEFUNDS -> removeFunds(bt.getAmount(), bt.getBucket());
+            case ADDFUNDS, TRANSFER_ADDFUNDS -> addFunds(bt.getAmount(), bt.getBucket());
+            case REMOVEFUNDS, TRANSFER_REMOVEFUNDS -> removeFunds(bt.getAmount(), bt.getBucket());
             case UNDO_ADDFUNDS -> addFunds(bt.getAmount().negate(), bt.getBucket());
             case UNDO_REMOVEFUNDS -> removeFunds(bt.getAmount().negate(), bt.getBucket());
         }

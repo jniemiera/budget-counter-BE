@@ -1,5 +1,6 @@
 package com.counter.budget.budgetcounterbe.model;
 
+import com.counter.budget.budgetcounterbe.dto.SaveBucketRequest;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -42,10 +43,10 @@ public class Bucket {
     @Column(nullable = false, updatable = false)
     private boolean isDefault;
 
-    public Bucket(String name, int percentage, String description){
-        this.name = name;
-        this.percentage = percentage;
-        this.description = description;
+    public Bucket(SaveBucketRequest request) {
+        this.name = request.name();
+        this.percentage = request.percentage();
+        this.description = request.description();
         this.amount = BigDecimal.ZERO;
     }
 
