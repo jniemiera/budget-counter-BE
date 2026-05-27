@@ -1,9 +1,8 @@
 package com.counter.budget.budgetcounterbe.service;
 
-import com.counter.budget.budgetcounterbe.dto.CreateTransactionRequest;
+import com.counter.budget.budgetcounterbe.dto.TransferMoneyRequest;
 import com.counter.budget.budgetcounterbe.exception.bucket.CannotDeleteDefaultBucketException;
 import com.counter.budget.budgetcounterbe.model.Bucket;
-import com.counter.budget.budgetcounterbe.model.TransactionType;
 import com.counter.budget.budgetcounterbe.repository.BucketRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,15 +33,10 @@ public class BucketDeletionService {
         Bucket defaultBucket = bucketService.getDefaultBucket();
         if (bucket == defaultBucket) throw new CannotDeleteDefaultBucketException();
 
-        transactionService.createTransaction(new CreateTransactionRequest(
-                bucket.getAmount(),
-                TransactionType.TRANSFER_ADDFUNDS,
-                defaultBucket.getId()
-        ));
-        transactionService.createTransaction(new CreateTransactionRequest(
-                bucket.getAmount(),
-                TransactionType.TRANSFER_REMOVEFUNDS,
-                bucket.getId()
+        transactionService.transferMoney(new TransferMoneyRequest(
+                bucket.getId(),
+                defaultBucket.getId(),
+                bucket.getAmount()
         ));
 
         bucket.setDeleted(true);

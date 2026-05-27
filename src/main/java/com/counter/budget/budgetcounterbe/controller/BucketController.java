@@ -1,10 +1,12 @@
 package com.counter.budget.budgetcounterbe.controller;
 
 import com.counter.budget.budgetcounterbe.dto.BucketResponse;
+import com.counter.budget.budgetcounterbe.dto.BucketTransactionResponse;
 import com.counter.budget.budgetcounterbe.dto.SaveBucketRequest;
 import com.counter.budget.budgetcounterbe.dto.PatchBucketRequest;
 import com.counter.budget.budgetcounterbe.service.BucketDeletionService;
 import com.counter.budget.budgetcounterbe.service.BucketService;
+import com.counter.budget.budgetcounterbe.service.BucketTransactionService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,11 +22,15 @@ public class BucketController {
 
     private final BucketDeletionService bucketDeletionService;
 
+    private final BucketTransactionService bucketTransactionService;
+
     public BucketController(
             BucketService bucketService,
-            BucketDeletionService bucketDeletionService) {
+            BucketDeletionService bucketDeletionService,
+            BucketTransactionService bucketTransactionService) {
         this.bucketService = bucketService;
         this.bucketDeletionService = bucketDeletionService;
+        this.bucketTransactionService = bucketTransactionService;
     }
 
     @GetMapping
@@ -36,6 +42,12 @@ public class BucketController {
     @GetMapping(value = "{bucketId}")
     public ResponseEntity<BucketResponse> getBucketById(@PathVariable UUID bucketId) {
         BucketResponse response = bucketService.getBucketResponseById(bucketId);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping(value = "{bucketId}/transactions")
+    public ResponseEntity<List<BucketTransactionResponse>> getTransactionsByBucket(@PathVariable UUID bucketId) {
+        List<BucketTransactionResponse> response =  bucketTransactionService.getBTByBucket(bucketId);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 

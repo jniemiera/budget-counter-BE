@@ -3,6 +3,7 @@ package com.counter.budget.budgetcounterbe.service;
 import com.counter.budget.budgetcounterbe.dto.CreateTransactionRequest;
 import com.counter.budget.budgetcounterbe.dto.TransactionResponse;
 import com.counter.budget.budgetcounterbe.dto.TransactionResponseMapper;
+import com.counter.budget.budgetcounterbe.dto.TransferMoneyRequest;
 import com.counter.budget.budgetcounterbe.exception.bucket.BucketPercentagesIncorrectException;
 import com.counter.budget.budgetcounterbe.exception.transaction.TransactionBucketNotSpecifiedException;
 import com.counter.budget.budgetcounterbe.exception.transaction.TransactionNotFoundException;
@@ -12,6 +13,7 @@ import com.counter.budget.budgetcounterbe.model.Transaction;
 import com.counter.budget.budgetcounterbe.model.TransactionType;
 import com.counter.budget.budgetcounterbe.repository.TransactionRepository;
 import jakarta.transaction.Transactional;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -123,5 +125,11 @@ public class TransactionService {
         if (bucketPercentages != 100) {
             throw new BucketPercentagesIncorrectException(bucketPercentages);
         }
+    }
+
+    @Transactional
+    public void transferMoney(@NotNull TransferMoneyRequest request) {
+        createTransaction(new CreateTransactionRequest(request.amount(), TransactionType.TRANSFER_REMOVEFUNDS, request.sourceBucketId()));
+        createTransaction(new CreateTransactionRequest(request.amount(), TransactionType.TRANSFER_ADDFUNDS, request.targetBucketId()));
     }
 }
