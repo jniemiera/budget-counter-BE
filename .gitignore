@@ -31,3 +31,8 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Config ###
+application.yml
+application-dev.yml
+application-prod.yml

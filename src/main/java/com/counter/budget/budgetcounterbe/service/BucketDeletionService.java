@@ -43,7 +43,8 @@ public class BucketDeletionService {
         transactionService.transferFunds(new TransferFundsRequest(
                 bucket.getId(),
                 defaultBucket.getId(),
-                bucket.getAmount()
+                bucket.getAmount(),
+                "Transferring funds to default bucket in order to delete bucket %s".formatted(bucket.getName())
         ), transaction);
         transactionRepository.save(transaction);
 

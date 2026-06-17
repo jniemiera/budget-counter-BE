@@ -71,6 +71,7 @@ public class TransactionService {
 
     @Transactional
     public Transaction addFunds(@NotNull AddFundsRequest request, Transaction transaction){
+        transaction.setDescription(request.description());
         List<Bucket> buckets = bucketService.getBuckets().stream().filter(b -> !b.isDefault()).toList();
         BigDecimal splitAmountSum = BigDecimal.ZERO;
 
@@ -104,6 +105,8 @@ public class TransactionService {
     @Transactional
     public Transaction removeFunds(@NotNull RemoveFundsRequest request, Transaction transaction){
         if (request.bucketId() == null) throw new TransactionBucketNotSpecifiedException();
+        transaction.setDescription(request.description());
+
         UUID bucketId = request.bucketId();
         Bucket bucket = bucketService.getBucketById(bucketId);
         BucketTransaction bt = bucket.addBucketTransaction(transaction, request.amount(), request.type());
@@ -116,6 +119,7 @@ public class TransactionService {
     @Transactional
     public Transaction transferFunds(@NotNull TransferFundsRequest request, Transaction transaction) {
         if(request.sourceBucketId() == null || request.targetBucketId() == null) throw new TransactionBucketNotSpecifiedException();
+        transaction.setDescription(request.description());
 
         Bucket sourceBucket = bucketService.getBucketById(request.sourceBucketId());
         Bucket targetBucket = bucketService.getBucketById(request.targetBucketId());
@@ -143,13 +147,15 @@ public class TransactionService {
         if (transactionType.equals(TransactionType.ADDFUNDS)) {
             createTransaction(new AddFundsRequest(
                     transaction.getBucketTransactions().stream().map(BucketTransaction::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add),
-                    TransactionType.UNDO_ADDFUNDS));
+                    TransactionType.UNDO_ADDFUNDS,
+                    "Undo adding funds transaction"));
         }
         else if (transactionType.equals(TransactionType.REMOVEFUNDS)) {
             createTransaction(new RemoveFundsRequest(
                     transaction.getBucketTransactions().stream().map(BucketTransaction::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add),
                     TransactionType.UNDO_REMOVEFUNDS,
-                    transaction.getBucketTransactions().getFirst().getBucket().getId()
+                    transaction.getBucketTransactions().getFirst().getBucket().getId(),
+                    "Undo removing funds transaction"
             ));
         }
     }

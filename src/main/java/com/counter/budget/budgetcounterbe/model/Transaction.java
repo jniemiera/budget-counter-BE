@@ -26,6 +26,9 @@ public class Transaction {
     @Column(nullable = false, updatable = false)
     private Instant timestamp;
 
+    @Column
+    private String description;
+
     @OneToMany(mappedBy = "transaction", cascade = CascadeType.ALL, orphanRemoval = true)
     List<BucketTransaction> bucketTransactions = new ArrayList<>();
 

@@ -25,6 +25,7 @@ public class TransactionResponseMapper {
                 transaction.getTimestamp().toString(),
                 bucketTransactions,
                 type,
-                amount);
+                amount,
+                transaction.getDescription());
     }
 }

@@ -11,5 +11,6 @@ public record TransactionResponse(
         String timestamp,
         List<UUID> bucketTransactions,
         TransactionType type,
-        BigDecimal amount
+        BigDecimal amount,
+        String description
 ) {}

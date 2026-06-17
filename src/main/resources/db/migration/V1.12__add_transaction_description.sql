@@ -1,0 +1,1 @@
+ALTER TABLE Transactions ADD description varchar(255);
